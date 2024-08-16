@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Posts</title>
+</head>
+<body>
+<h1>All Posts</h1>
+<ul>
+    <% posts.forEach(post => { %>
+        <li><%= post.title %></li>
+    <% }) %>
+</ul>
+</body>
+</html>

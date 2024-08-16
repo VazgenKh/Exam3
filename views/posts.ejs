@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Posts</title>
+</head>
+<body>
+<h1>Posts</h1>
+<ul>
+    <% posts.forEach(post => { %>
+        <li>
+            <h2><%= post.title %></h2>
+            <p><%= post.description %></p>
+            <a href="/post/<%= post.id %>">View Post</a>
+        </li>
+    <% }) %>
+</ul>
+
+<button onclick="loadMore()">Load More</button>
+
+<script>
+    let currentPage = 1;
+
+    async function loadMore() {
+        currentPage++;
+        const response = await fetch(`/api/posts?page=${currentPage}`);
+        const data = await response.json();
+        const posts = data.data;
+
+        const ul = document.querySelector('ul');
+        posts.forEach(post => {
+            const li = document.createElement('li');
+            li.innerHTML = `<h2>${post.title}</h2><p>${post.description}</p><a href="/post/${post.id}">View Post</a>`;
+            ul.appendChild(li);
+        });
+
+        if (currentPage >= data.pages) {
+            document.querySelector('button').disabled = true;
+        }
+    }
+</script>
+</body>
+</html>

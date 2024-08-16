@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= post.title %></title>
+</head>
+<body>
+<h1><%= post.title %></h1>
+<p><%= post.description %></p>
+
+<h2>Comments</h2>
+<ul id="commentsList">
+    <% comments.forEach(comment => { %>
+        <li><%= comment.commentMessage %></li>
+    <% }) %>
+</ul>
+
+<button onclick="loadMoreComments()">Load More Comments</button>
+
+<h3>Add a Comment</h3>
+<form id="commentForm">
+    <input type="hidden" id="postId" value="<%= post.id %>">
+    <label for="commentMessage">Comment:</label>
+    <textarea id="commentMessage" name="commentMessage" required></textarea>
+    <br>
+    <button type="submit">Add Comment</button>
+</form>
+
+<script>
+    let currentCommentPage = 1;
+
+    document.getElementById('commentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const postId = document.getElementById('postId').value;
+        const commentMessage = document.getElementById('commentMessage').value;
+
+        const token = localStorage.getItem('x-token');
+
+        const response = await fetch('/api/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'auth-token': token
+            },
+            body: JSON.stringify({ postId, commentMessage })
+        });
+
+        if (response.ok) {
+            const comment = await response.json();
+            const li = document.createElement('li');
+            li.textContent = comment.commentMessage;
+            document.getElementById('commentsList').appendChild(li);
+            document.getElementById('commentMessage').value = '';
+        } else {
+            alert('Failed to add comment');
+        }
+    });
+
+    async function loadMoreComments() {
+        currentCommentPage++;
+        const postId = document.getElementById('postId').value;
+        const response = await fetch(`/api/comments/${postId}?page=${currentCommentPage}`);
+        const data = await response.json();
+        const comments = data.data;
+
+        const ul = document.getElementById('commentsList');
+        comments.forEach(comment => {
+            const li = document.createElement('li');
+            li.textContent = comment.commentMessage;
+            ul.appendChild(li);
+        });
+
+        if (currentCommentPage >= data.pages) {
+            document.querySelector('button').disabled = true;
+        }
+    }
+</script>
+</body>
+</html>
